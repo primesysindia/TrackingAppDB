@@ -8,6 +8,12 @@ public class DeviceIssueDTO {
 	Boolean isSendMail;
 	ArrayList<IssueFileInfoDTO> issueFileList;
 
+	public Boolean getIsSendMail() {
+		return isSendMail;
+	}
+	public void setIsSendMail(Boolean isSendMail) {
+		this.isSendMail = isSendMail;
+	}
 	public String getDeviceId() {
 		return deviceId;
 	}
@@ -189,11 +195,6 @@ public class DeviceIssueDTO {
 	public void setIsImeiSIMCorrect(int isImeiSIMCorrect) {
 		this.isImeiSIMCorrect = isImeiSIMCorrect;
 	}
-	public Boolean getIsSendMail() {
-		return isSendMail;
-	}
-	public void setIsSendMail(Boolean isSendMail) {
-		this.isSendMail = isSendMail;
-	}
+
 		
 }

@@ -68,21 +68,25 @@ import dto.DeviceDTO;
 import dto.DeviceDataDTO;
 import dto.DeviceExchangeDTO;
 import dto.DeviceInfoGatheringDTO;
+import dto.DeviceInspectionDTO;
 import dto.DeviceIssueDTO;
 import dto.DevicePaymentDTO;
 import dto.DevicePaymentInfoDetailsDTO;
 import dto.DeviceStatusInfoDto;
 import dto.DeviceTypeDTO;
+import dto.DeviceRegisterDTO;
 import dto.FeatureAddressDetailsDTO;
 import dto.IssueFileInfoDTO;
 import dto.MailFormatDTO;
 import dto.MessageObject;
+import dto.PatrolManBeatDTO;
 import dto.PaymentPlanDTO;
 import dto.PaymentmodeDTO;
 import dto.RailwayDeptHierarchyDTO;
 import dto.RailwayKeymanDTO;
 import dto.RailwayPatrolManDTO;
 import dto.RailwayPatrolManripMasterDTO;
+import dto.ReportDataAdminDTO;
 import dto.ReportSummeryDTO;
 import dto.StudentMasterDTO;
 import dto.UserDTO;
@@ -144,8 +148,11 @@ public class AdminServiceDao {
 					Raildto.setStart_Lon(rs.getDouble("kmStartLang"));
 					Raildto.setEnd_Lat(rs.getDouble("kmEndLat"));
 					Raildto.setEnd_Lon(rs.getDouble("kmEndLang"));
-					System.err.println(rs.getInt("Id"));
+//					System.err.println(rs.getInt("Id"));
 					Raildto.setIsApprove(rs.getBoolean("ApprovedStatus"));
+					Raildto.setStartTime(rs.getInt("StartTime"));
+
+					Raildto.setEndTime(rs.getInt("EndTime"));
 					p.add(Raildto);
 				}
 			}
@@ -1193,8 +1200,73 @@ public class AdminServiceDao {
 		} 
 		catch (MongoException e) {
 			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
+		
+		//Get device command setup List Which are [
+		try{
+	
+			String doc = mongoconnection.doEval("getDeviceSetupInfo("+imeiNo+")").toString();
+			System.err.println("getDeviceSetupInfo--retval--"+doc);
+		   org.json.JSONObject jobject = new org.json.JSONObject(doc);
+		   org.json.JSONArray jRetvalArray=jobject.getJSONArray("retval");
+		
+		   for (int i = 0; i < jRetvalArray.length(); i++) {
+			   org.json.JSONObject joObjLastComment=jRetvalArray.getJSONObject(i);
+			   org.json.JSONObject joObj=joObjLastComment.getJSONObject("lastComment");
+
+			   
+			   if (joObj.getString("command").contains("period"))
+				dtp.setPeriod(joObj.getString("device_response"));
+
+		
+			   if (joObj.getString("command").contains("HBT#"))
+					dtp.setHbt(joObj.getString("device_response"));
+			  
+			   if (joObj.getString("command").contains("TIMER#"))
+					dtp.setTimer(joObj.getString("device_response"));
+			 
+			   if (joObj.getString("command").contains("SOS#"))
+					dtp.setSos(joObj.getString("device_response"));
+			   
+			   if (joObj.getString("command").contains("FN#"))
+					dtp.setFn(joObj.getString("device_response"));
+			   
+			  
+			 
+			   
+		}
+		   if (dtp.getFn()==null) 
+			   dtp.setFn("");
+		   if (dtp.getPeriod()==null) 
+			   dtp.setPeriod("");
+		   if (dtp.getSos()==null) 
+			   dtp.setSos("");
+		   
+		   if (dtp.getTimer()==null) 
+			   dtp.setTimer("");
+		   
+		   if (dtp.getHbt()==null) 
+			   dtp.setHbt("");
+		   
+					
+
+		}catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		catch (MongoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+	 } catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		
+		
 		return dtp;
 	}
 	
@@ -1251,7 +1323,9 @@ public class AdminServiceDao {
 					if (bascObject.containsField("student_id"))
 						dtp.setStudentId((int) bascObject.get("student_id"));
 					else dtp.setStudentId(0);
-
+					if (bascObject.containsField("parent_id"))
+						dtp.setParentId((int) bascObject.get("parent_id"));
+					else dtp.setParentId(0);
 
 					cmdList.add(dtp);
 				}
@@ -1732,7 +1806,7 @@ public class AdminServiceDao {
 		ArrayList<DeviceCommandHistoryDTO>cmdList=new ArrayList<>();
 
 	
-		//Get Command List Which are pendings
+		//Get Command List Which are [
 		try{
 	
 			String doc = mongoconnection.doEval("getPendingCommandHistory()").toString();
@@ -2585,7 +2659,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 				System.err.println(joBeat.getStartTime()+"--"+ joBeat.getEndTime());
 				System.err.println(joBeat.getKmStart()+"--"+ joBeat.getKmEnd());
 
-			java.sql.CallableStatement ps = con.prepareCall("{call SaveRailwayKeymanBeatPathWithLocationInBulk(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+			java.sql.CallableStatement ps = con.prepareCall("{call SaveRailwayKeymanBeatPathWithLocationInBulk(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 			ps.setInt(1,  joBeat.getStudentId());
 			ps.setDouble(2,  joBeat.getKmStart());
 			ps.setDouble(3,  joBeat.getKmEnd());
@@ -2602,7 +2676,8 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 			ps.setInt(14,  joBeat.getStartTime());
 			ps.setInt(15,  joBeat.getEndTime());
 
-			
+			ps.setInt(16,  joBeat.getBeatId());
+
 			
 			
 			int result = ps.executeUpdate();
@@ -2630,7 +2705,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 		try {
 			java.sql.CallableStatement ps = con.prepareCall("{call GetKeymanExistingBeatByParent(?)}");
 			ps.setInt(1, parentId);
-			//System.out.println("Parent-"+parentId);
+//			System.out.println("Parent-"+parentId);
 
 			ResultSet rs = ps.executeQuery();
 			if (rs != null) {
@@ -2648,8 +2723,8 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 					Raildto.setStart_Lon(rs.getDouble("kmStartLang"));
 					Raildto.setEnd_Lat(rs.getDouble("kmEndLat"));
 					Raildto.setEnd_Lon(rs.getDouble("kmEndLang"));
-					System.err.println(rs.getInt("Id"));
-					Raildto.setIsApprove(rs.getBoolean("ApprovedStatus"));
+//					System.err.println(rs.getInt("Id"));
+					/*Raildto.setIsApprove(rs.getBoolean("ApprovedStatus"));
 					Raildto.setEmailWhoInsert(rs.getString("EmailWhosInsert").trim());
 					Raildto.setMobWhoInsert(rs.getString("MobWhoInsert").trim());
 					Raildto.setNameWhoInsert(rs.getString("NameWhosInsert").trim());
@@ -2657,7 +2732,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 					Raildto.setDevicename(rs.getString("DeviceName").trim());
 
 					Raildto.setEndTime(rs.getInt("Endtime"));
-					Raildto.setApprovedDate(rs.getString("ApprovedDate"));
+					Raildto.setApprovedDate(rs.getString("ApprovedDate"));*/
 					Raildto.setDevicename(rs.getString("DeviceName"));
 					p.add(Raildto);
 				}
@@ -2669,16 +2744,16 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 	}
 
 	public MessageObject UpdateRailwayKeymanBeatPathCopyApprove(Connection con,
-			int beatId, int userLoginId) {
+			int beatId, int userLoginId,int existingBeatId) {
 		MessageObject msgo = new MessageObject();
 		String Photo = "";
 		
 		
 		try {
-			java.sql.CallableStatement ps = con.prepareCall("{call UpdateRailwayKeymanBeatPathCopyApprove(?,?)}");
+			java.sql.CallableStatement ps = con.prepareCall("{call UpdateRailwayKeymanBeatPathCopyApprove(?,?,?)}");
 			ps.setInt(1, beatId);			
 			ps.setInt(2, userLoginId);
-			
+			ps.setInt(3,existingBeatId);
 		
 			int result = ps.executeUpdate();
 			if (result == 0) {
@@ -2728,7 +2803,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 		try {
 			DBCollection collection = mongoconnection.getCollection(Common.TABLE_DEVICE);
 			BasicDBObject whereQuery = new BasicDBObject();
-			whereQuery.put("device", imeiNo);
+			whereQuery.put("device", Long.parseLong(imeiNo));
 			WriteResult cursor = collection.remove(whereQuery);
 
 			// System.out.print("WriteResult  of u-p11----"+cursor.getError()+"  "+timestamp_whereQuery);
@@ -2846,11 +2921,11 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 
 		public MessageObject AddNewDevice(DB mongoconnection,Connection con, int StudentID, int ParentId, String FirstName, String LastName, String Gender, 
 			String DeviceID, String Type, int DeviceType, String DeviceSimNumber, String ActivationDate, int PlanTypeID, 
-			int PaymentMode, String CreditName, String PaymentDate, String TransactionID, Double PayAmount, int registerOutParameter) {
+			int PaymentMode, String CreditName, String PaymentDate, String TransactionID, Double PayAmount, int registerOutParameter,String DeviceSimIMEINumber) {
 		MessageObject msg = new MessageObject();
 		String Photo = "";
 		try {
-			java.sql.CallableStatement ps = con.prepareCall("{call SaveAddDeviceWithAdminAndSubadmin(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+			java.sql.CallableStatement ps = con.prepareCall("{call SaveAddDeviceWithAdminAndSubadmin(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 			ps.setInt(1,StudentID);
 			ps.setInt(2, ParentId);
 			ps.setString(3, FirstName);
@@ -2868,7 +2943,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 			ps.setString(15, TransactionID);
 			ps.setDouble(16, PayAmount);
 			ps.registerOutParameter(17, java.sql.Types.INTEGER);
-			
+			ps.setString(18, DeviceSimIMEINumber);
 						
 			/*System.out.println("---studentID---"+studentID+"---parentId---"+parentId+"---firstName---"+firstName+"---lastName---"+lastName+
 					"---gender---"+gender+"---deviceID---"+deviceID+"---type---"+type+"---deviceType---"+"---deviceSimNumber---"+deviceSimNumber+
@@ -2884,19 +2959,27 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 			if (ps.getInt(17)> 0) {
 				msg.setError("false");
 				msg.setMessage("Device Added Successfully");
-			} else {
+				
+				DBCollection table = mongoconnection.getCollection(Common.TABLE_DEVICE);
+				
+				BasicDBObject Maindocument = new BasicDBObject();
+				Maindocument.put("Device", Long.parseLong(DeviceID));
+				Maindocument.put("StudentId", ps.getInt(17));
+				Maindocument.put("ParentId", ParentId);
+				table.insert(Maindocument);
+				
+			}else if (ps.getInt(17)==-10){
+				msg.setError("true");
+				msg.setMessage("Device IMEI "+DeviceID+" was already exist in DB");
+			}else 
+			{
+			
 				// //System.err.println("Error=="+result);
 				msg.setError("true");
 				msg.setMessage("Device was not Added Successfully");
 			}
 
-			DBCollection table = mongoconnection.getCollection(Common.TABLE_DEVICE);
 			
-			BasicDBObject Maindocument = new BasicDBObject();
-			Maindocument.put("Device", Long.parseLong(DeviceID));
-			Maindocument.put("StudentId", ps.getInt(17));
-			Maindocument.put("ParentId", ParentId);
-			table.insert(Maindocument);
 
 
 		} catch (Exception e) {
@@ -2907,9 +2990,10 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 
 		public MessageObject AddBulkDevices(DB mongoconnection,Connection con,String ActivationDate,int DeviceType,
 			Double PayAmount,String PaymentDate,int PaymentMode,int PlanTypeID,String TransactionID,String Type,
-			String BulkData, String CreditName,int ParentId) {
+			String BulkData, String CreditName,int ParentId,String DeviceSimIMEINumber) {
 		MessageObject msg = new MessageObject();
 		try{
+			StringBuilder deviceExist=new StringBuilder();
 		org.json.JSONArray jodata=new org.json.JSONArray(BulkData);
 		System.out.println("AddBulkDevices---jodata---"+jodata);
 
@@ -2922,7 +3006,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 					try {
 						org.json.JSONObject data=jodata.getJSONObject(i); 
 						
-						java.sql.CallableStatement ps = con.prepareCall("{call SaveAddDeviceWithAdminAndSubadmin(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+						java.sql.CallableStatement ps = con.prepareCall("{call SaveAddDeviceWithAdminAndSubadmin(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 						ps.setInt(1,0);
 						ps.setInt(2, ParentId);
 						ps.setString(3, data.getString("Firstname"));
@@ -2940,7 +3024,7 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 						ps.setString(15, TransactionID);
 						ps.setDouble(16, PayAmount);
 						ps.registerOutParameter(17, java.sql.Types.INTEGER);
-						
+						ps.setString(18, data.getLong("SimIMEI")+"");
 									
 						/*System.out.println("---studentID---"+studentID+"---parentId---"+parentId+"---firstName---"+firstName+"---lastName---"+lastName+
 								"---gender---"+gender+"---deviceID---"+deviceID+"---type---"+type+"---deviceType---"+"---deviceSimNumber---"+deviceSimNumber+
@@ -2956,19 +3040,30 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 						if (ps.getInt(17)> 0) {
 							msg.setError("false");
 							msg.setMessage("Device Added Successfully");
-						} else {
+							
+							DBCollection table = mongoconnection.getCollection(Common.TABLE_DEVICE);
+							
+							BasicDBObject Maindocument = new BasicDBObject();
+							Maindocument.put("Device", data.getLong("DeviceIMEI"));
+							Maindocument.put("StudentId", ps.getInt(17));
+							Maindocument.put("ParentId", ParentId);
+							table.insert(Maindocument);
+						}else if (ps.getInt(17)==-10){
+							
+							deviceExist.append(data.getLong("DeviceIMEI")+",");
+							
+						}else {
 							// //System.err.println("Error=="+result);
 							msg.setError("true");
 							msg.setMessage("Device was not Added Successfully");
 						}
 
-						DBCollection table = mongoconnection.getCollection(Common.TABLE_DEVICE);
-						
-						BasicDBObject Maindocument = new BasicDBObject();
-						Maindocument.put("Device", data.getLong("DeviceIMEI"));
-						Maindocument.put("StudentId", ps.getInt(17));
-						Maindocument.put("ParentId", ParentId);
-						table.insert(Maindocument);
+						if (deviceExist.toString().length()>0) {
+							msg.setError("true");
+							msg.setMessage("Device IMEI "+deviceExist+" was already exist in DB");
+							
+						}
+					
 
 
 					} catch (Exception e) {
@@ -2979,6 +3074,604 @@ ArrayList<DevicePaymentInfoDetailsDTO> AllDeviceDataList=new ArrayList<>();
 		e.printStackTrace();    }    
 		return msg;
 	}
+
+		public MessageObject AddPatrolmanBeatBulk(DB mongoconnection,Connection con, int parentId, int userLoginId, String name,
+				String contactNo, int seasonId, String emailId,String patrolmenFormArray) {
+			MessageObject msg = new MessageObject(); 
+			 
+			try{
+			org.json.JSONArray jodata=new org.json.JSONArray(patrolmenFormArray);
+			System.out.println("AddPatrolmanBeatBulk---jodata---"+jodata);
+
+
+			for (int i=0;i<jodata.length();i++)
+			{
+				
+
+						for (int j=1;j<=jodata.length();j++)
+						{
+							try {
+							org.json.JSONObject data=jodata.getJSONObject(i); 
+							System.out.println("AddPatrolmanBeatBulk---time---"+j+"-----"+data.getString("start_time"+j));
+
+							
+							 if (data.getString("start_time"+j).length()>0&&data.getString("end_time"+j).length()>0) 
+							 {
+								  
+								 /*String startTime =data.getString("start_time"+j);
+								  String timeSplit[] = startTime.split(":");
+								  int startTimeseconds = Integer.parseInt(timeSplit[0]) * 60 * 60 +  Integer.parseInt(timeSplit[1]) * 60;
+								  
+								  System.err.println("Time sec---"+startTime);
+								  
+									 String endTime =data.getString("end_time"+j);
+									  String endTimeSplit[] = endTime.split(":");
+									  int endTimeseconds = Integer.parseInt(endTimeSplit[0]) * 60 * 60 +  Integer.parseInt(endTimeSplit[1]) * 60;
+									  
+									  System.err.println("Time sec---"+startTime);*/
+									  
+									  
+
+
+								 	String[] startTimeArray=data.getString("start_time"+j).split(":");
+								 	String[] endTimeArray=data.getString("end_time"+j).split(":");
+        
+      int  startTimeStamp = 0 + (60 * Integer.parseInt(startTimeArray[1])) + (3600 * Integer.parseInt(startTimeArray[0]));
+      int  endTimeStamp = 0 + (60 * Integer.parseInt(endTimeArray[1])) + (3600 * Integer.parseInt(endTimeArray[0]));
+
+      System.err.println("startTimeStamp--"+startTimeStamp+"--endTimeStamp--"+endTimeStamp);
+      System.err.println("startTimeArray--"+startTimeArray[0]+"--startTimeArray--"+startTimeArray[1]);
+
+     int startTimeStampMapping=startTimeStamp;
+
+      if(startTimeStamp>endTimeStamp || startTimeStamp>43200) 
+    	  startTimeStampMapping=startTimeStamp-86400;
+    System.err.println("startTimeStampMapping===="+startTimeStampMapping);
+
+								  
+	
+									java.sql.CallableStatement ps = con.prepareCall("{call GetPatrolmanTripMasterId(?,?,?,?,?)}");
+										ps.setInt(1,parentId);
+										ps.setInt(2, userLoginId);
+										ps.setInt(3,startTimeStamp);
+										ps.setInt(4, endTimeStamp);
+										ps.registerOutParameter(5, java.sql.Types.INTEGER);
+			
+									
+										Boolean rs = ps.execute();
+										System.out.println("rs " + rs);
+			
+										System.out.println("Trip ID: " + ps.getInt(5));
+										
+										//int result = ps.executeUpdate();
+										if (ps.getInt(5)> 0) {
+											try {
+												java.sql.CallableStatement ps1 = con.prepareCall("{call SaveRailwayPetrolmanBeatPathWithLocationWithInBulk(?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+												ps1.setInt(1,Integer.parseInt(data.getString("StudentId")));
+												ps1.setInt(2,  ps.getInt(5));
+												ps1.setString(3, data.getString("KmStart")+"-"+data.getString("KmEnd"));
+												ps1.setDouble(4, Double.parseDouble(data.getString("KmStart")));
+												ps1.setDouble(5,Double.parseDouble( data.getString("KmEnd")));
+												ps1.setDouble(6, Double.parseDouble( data.getString("KmEnd"))-Double.parseDouble(data.getString("KmStart")));
+												ps1.setString(7, data.getString("SectionName"));
+												ps1.setInt(8, userLoginId);
+												ps1.setInt(9, seasonId);
+												ps1.setString(10, name);
+												ps1.setString(11, emailId);
+												ps1.setString(12, contactNo);
+												ps1.setInt(13, Integer.parseInt(data.getString("BeatId")));
+
+												
+											int result = ps1.executeUpdate();
+												if (result == 0) {
+													msg.setError("true");
+													msg.setMessage("Beat was  not Inserted");
+												} else {
+													// //System.err.("Error=="+result);println
+													msg.setError("false");
+													msg.setMessage("Beat was Inserted Successfully");
+										
+												}
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+								
+										} else {
+											// //System.err.println("Error=="+result);
+											msg.setError("true");
+											msg.setMessage("Beat was not Added Successfully");
+										}
+			
+									 }
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+							  
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+			}
+				
+			
+			
+			}
+			}catch (Exception e) {          
+			e.printStackTrace();    }    
+			return msg;
+		}
+
+		public ArrayList<PatrolManBeatDTO> GetPatrolMenBeatAPI(Connection con,int StudentId, int SeasonId) {
+			ArrayList<PatrolManBeatDTO> p = new ArrayList<PatrolManBeatDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetPatrolmanTripByStudentId(?,?)}");
+				ps.setInt(1, StudentId);
+				ps.setInt(2, SeasonId);
+							
+				System.out.println("---studentId---"+StudentId+"---seasonId---"+SeasonId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						PatrolManBeatDTO PatDto= new PatrolManBeatDTO();
+						PatDto.setBeatId(rs.getInt("beatId"));
+						PatDto.setStudentId(rs.getInt("StudentId"));
+						PatDto.setSectionName(rs.getString("SectionName"));
+						PatDto.setFk_TripMasterId(rs.getInt("fk_TripMasterId")); 
+						PatDto.setKmStart(rs.getString("kmStart").toString().trim());
+						PatDto.setKmEnd(rs.getString("kmEnd").toString().trim());
+						PatDto.setSeasonId(rs.getInt("seasonId"));
+						PatDto.setStartTime(rs.getString("startTime").toString().trim());
+						PatDto.setEndTime(rs.getString("endTime").toString().trim());
+						
+						p.add(PatDto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+		}
+
+		
+		public ArrayList<PatrolManBeatDTO> GetPatrolMenExistingBeatByParent(Connection con, int parentId, int seasonId) 
+		{
+			ArrayList<PatrolManBeatDTO> p = new ArrayList<PatrolManBeatDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetPatrolmanExistingBeatByParent(?,?)}");
+				ps.setInt(1, parentId);
+				ps.setInt(2, seasonId);
+				System.out.println("---parentId---"+parentId+"---seasonId---"+seasonId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						PatrolManBeatDTO RailPdto= new PatrolManBeatDTO();
+						RailPdto.setStudentId(rs.getInt("StudentId"));
+						RailPdto.setSectionName(rs.getString("sectionName").trim());
+						RailPdto.setFk_TripMasterId(rs.getInt("fk_TripMasterId")); 
+						RailPdto.setKmStart(rs.getString("kmStart").toString().trim());
+						RailPdto.setKmEnd(rs.getString("kmEnd").toString().trim());
+						RailPdto.setSeasonId(rs.getInt("seasonId"));
+						RailPdto.setStartTime(rs.getString("startTime").toString().trim());
+						RailPdto.setEndTime(rs.getString("endTime").toString().trim());
+						RailPdto.setBeatId(rs.getInt("BeatId"));
+						RailPdto.setSectionName(rs.getString("SectionName").toString().trim());
+						p.add(RailPdto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+
+		}
+
+		public MessageObject UpdateRailwayPatrolmanBeatPathCopyApprove(Connection con, int beatId, int userloginId) {
+
+			
+			MessageObject msgo = new MessageObject();
+			String Photo = "";		
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call UpdateRailwayPatrolmanBeatPathCopyApprove(?,?)}");
+				ps.setInt(1, beatId);			
+				ps.setInt(2, userloginId);
+						
+				int result = ps.executeUpdate();
+				if (result == 0) {
+					msgo.setError("true");
+					msgo.setMessage("Beat was not aprroved");
+				} else {
+					// //System.err.println("Error=="+result);
+					msgo.setError("false");
+					msgo.setMessage("Beat was aprroved Successfully");
+		
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return msgo;
+		}
+		
+		
+
+		public ArrayList<RailwayKeymanDTO> GetKeymanExistingBeatToApproveByParent(
+				Connection con, int parentId) {
+
+			ArrayList<RailwayKeymanDTO> p = new ArrayList<RailwayKeymanDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetKeymanExistingBeatToApproveByParent(?)}");
+				ps.setInt(1, parentId);
+				//System.out.println("Parent-"+parentId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						RailwayKeymanDTO Raildto= new RailwayKeymanDTO();
+						Raildto.setParentId(parentId);
+						Raildto.setBeatId(rs.getInt("Id"));
+						Raildto.setStudentId(rs.getInt("studentId"));
+						Raildto.setExistingBeatId(rs.getInt("ExistingBeatId"));
+
+						Raildto.setKmStart(rs.getDouble("KmStart"));
+						Raildto.setKmEnd(rs.getDouble("KmEnd"));
+						Raildto.setSectionName(rs.getString("SectionName").trim());
+						Raildto.setDeviceId(rs.getString("DeviceID"));
+						Raildto.setStart_Lat(rs.getDouble("kmStartLat"));
+						Raildto.setStart_Lon(rs.getDouble("kmStartLang"));
+						Raildto.setEnd_Lat(rs.getDouble("kmEndLat"));
+						Raildto.setEnd_Lon(rs.getDouble("kmEndLang"));
+						System.err.println(rs.getInt("Id"));
+						Raildto.setIsApprove(rs.getBoolean("ApprovedStatus"));
+						Raildto.setEmailWhoInsert(rs.getString("EmailWhosInsert").trim());
+						Raildto.setMobWhoInsert(rs.getString("MobWhoInsert").trim());
+						Raildto.setNameWhoInsert(rs.getString("NameWhosInsert").trim());
+						Raildto.setStartTime(rs.getInt("StartTime"));
+						Raildto.setDevicename(rs.getString("DeviceName").trim());
+
+						Raildto.setEndTime(rs.getInt("Endtime"));
+						Raildto.setApprovedDate(rs.getString("ApprovedDate"));
+						p.add(Raildto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+		}
+
+		public ArrayList<PatrolManBeatDTO> GetPatrolmanExistingBeatToApproveByParent(
+				Connection con, int parentId, int seasonId) {
+			ArrayList<PatrolManBeatDTO> p = new ArrayList<PatrolManBeatDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetPatrolmanExistingBeatToApproveByParent(?,?)}");
+				ps.setInt(1, parentId);
+				ps.setInt(2, seasonId);
+				System.out.println("---parentId---"+parentId+"---seasonId---"+seasonId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						PatrolManBeatDTO RailPdto= new PatrolManBeatDTO();
+						RailPdto.setStudentId(rs.getInt("StudentId"));
+						RailPdto.setSectionName(rs.getString("sectionName").trim());
+						RailPdto.setFk_TripMasterId(rs.getInt("fk_TripMasterId")); 
+						RailPdto.setKmStart(rs.getString("kmStart").toString().trim());
+						RailPdto.setKmEnd(rs.getString("kmEnd").toString().trim());
+						RailPdto.setSeasonId(rs.getInt("seasonId"));
+						RailPdto.setStartTime(rs.getString("startTime").toString().trim());
+						RailPdto.setEndTime(rs.getString("endTime").toString().trim());
+						p.add(RailPdto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+
+		}
+
+		public MessageObject GetPendingDeviceCommandHistoryByDevice(
+				DB mongoconnection, String deviceId) {
+			MessageObject mObj=new MessageObject();
+			ArrayList<DeviceCommandHistoryDTO>cmdList=new ArrayList<>();
+
+		
+			//Get Command List Which are [
+			try{
+		
+				String doc = mongoconnection.doEval("getPendingCommandHistoryByDevice("+deviceId+")").toString();
+				System.out.println("Doc--retval--"+doc);
+			   org.json.JSONObject jobject = new org.json.JSONObject(doc);
+			   org.json.JSONArray jRetvalArray=jobject.getJSONArray("retval");
+			
+			   for (int i = 0; i < jRetvalArray.length(); i++) {
+				   org.json.JSONObject joObjLastComment=jRetvalArray.getJSONObject(i);
+				   org.json.JSONObject joObj=joObjLastComment.getJSONObject("lastComment");
+
+				   if (joObj.getString("delivered_msg").equals("device_is_not_connected"))
+				   {
+					
+				
+					   DeviceCommandHistoryDTO dtp=new DeviceCommandHistoryDTO();			   
+					   dtp.setName(joObj.getString("name")+"");
+					   dtp.setDeviceId(joObj.getLong("device")+"");
+					   dtp.setCommand(joObj.getString("command")+"");
+					   dtp.setCommandDeliveredMsg(joObj.getString("delivered_msg")+"");
+//						dtp.setDeviceCommandResponse(joObj.getString("device_response")+"");
+					   dtp.setLogin_name(joObj.getString("login_name")+"");
+					   dtp.setTimestamp(joObj.getLong("timestamp")+"");
+					   if (joObj.has("student_id"))
+						dtp.setStudentId((int) joObj.getInt("student_id"));
+					   else dtp.setStudentId(0);
+
+					cmdList.add(dtp);
+					
+				   }
+			}
+				 
+				
+						
+
+			}catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			catch (MongoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+		 } catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+//			
+			System.err.println("cmdList-------"+cmdList.size());
+
+			// establish a connection 
+	        try
+	        { 
+				Socket socket = new Socket(Common.socketURL_Connection, 4545); 
+//	            System.out.println("Connected"); 
+	 
+	            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	            
+	            //send Data to socket
+	           for (DeviceCommandHistoryDTO deviceCommandHistoryDTO : cmdList)
+	            {
+	            	if (getDeviceIsConnected(deviceCommandHistoryDTO.getDeviceId(),mongoconnection)) {
+	            		JSONObject joObj=new JSONObject();
+	    				joObj.put("event", "send_command");
+	    				joObj.put("student_id", deviceCommandHistoryDTO.getStudentId());
+	    				JSONObject joObjData=new JSONObject();
+	    				joObjData.put("command", deviceCommandHistoryDTO.getCommand());
+	    				joObjData.put("device", deviceCommandHistoryDTO.getDeviceId());
+	    				joObjData.put("deviceName",deviceCommandHistoryDTO.getName());
+	    				joObjData.put("loginName", deviceCommandHistoryDTO.getLogin_name()+"_AutoResend");
+	    				
+	    				joObj.put("data", joObjData);
+	    				
+	    	
+//	    		        System.out.println("Sending string to the ServerSocket");
+
+	    		        // write the message we want to send
+	    		        PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+
+	    	            pw.println(joObj);
+	    	            pw.flush();pw.close();
+
+//						System.out.println("Device cmd Resend "+deviceCommandHistoryDTO.getDeviceId()+"--"+deviceCommandHistoryDTO.getCommand());
+					}else{
+//						System.out.println("Device Is not connected "+deviceCommandHistoryDTO.getDeviceId());
+					}
+					
+				}
+	            
+	            
+
+
+	           socket.close();
+	        } 
+	        catch(UnknownHostException u) 
+	        { 
+	            //System.out.println(u); 
+	        } 
+	        catch(IOException i) 
+	        { 
+	            //System.out.println(i); 
+	        } 
+	  
+			
+			
+			return mObj;
+		}
+
+		public ArrayList<ReportDataAdminDTO> GetReportAdminAPI(Connection con,int parentId, int day) {
+			ArrayList<ReportDataAdminDTO> p = new ArrayList<ReportDataAdminDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetAdminReportCronTabEntry(?)}");
+				ps.setInt(1, parentId);
+				System.out.println("---parentId---"+parentId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						ReportDataAdminDTO RepoPdto= new ReportDataAdminDTO();
+						RepoPdto.setId(rs.getInt("Id"));
+						RepoPdto.setReportName(rs.getString("ReportName"));
+						RepoPdto.setReportURl(rs.getString("ReportURL").replace("&Day=0", "&Day="+day));
+						RepoPdto.setParentId(rs.getInt("ParentId"));
+						//RepoPdto.setDay(rs.getInt("day"));
+						//RepoPdto.setStartTime(rs.getString("StartTime").trim());
+						//RepoPdto.setEndTime(rs.getString("EndTime").trim());
+						p.add(RepoPdto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+		}
+
+		
+		public MessageObject DeviceRegisterAPI(
+				DB mongoconnection, Connection con, String imeiNo) {
+			MessageObject msg= new MessageObject();
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetDetailsFromIMEI(?)}");
+				ps.setString(1, imeiNo);
+										
+				System.out.println("---imeiNo---"+imeiNo);
+				
+				ResultSet rs = ps.executeQuery();
+				DeviceRegisterDTO dataDto= new DeviceRegisterDTO();
+
+				if (rs != null&&rs.next()) {
+					
+
+						dataDto.setStudentId(rs.getInt("StudentID"));
+						dataDto.setFirstName(rs.getString("FirstName"));
+						dataDto.setLastName(rs.getString("LastName"));
+						dataDto.setDeviceId(rs.getString("DeviceID"));
+						dataDto.setParentId(rs.getInt("ParentID"));
+						dataDto.setParentName(rs.getString("ParentName"));
+					
+
+					
+					if (rs.getInt("StudentID")!=0) {
+						
+				
+				DBCollection table = mongoconnection.getCollection(Common.TABLE_DEVICE);
+				BasicDBObject whereQuery = new BasicDBObject();
+				whereQuery.put("device", Long.parseLong(imeiNo));				
+				BasicDBObject updateDocument = new BasicDBObject();
+				updateDocument.append("$set",new BasicDBObject().
+						append("student",dataDto.getStudentId()).append("parent",dataDto.getParentId()));
+
+					//table.update(searchQuery, newDocument);
+					table.update(whereQuery, updateDocument, true, false);
+					
+					
+					BasicDBObject device_whereQuery = new BasicDBObject();
+					device_whereQuery.put("student", dataDto.getStudentId());
+					DBCursor cursor = table.find(device_whereQuery);
+					cursor.addOption(com.mongodb.Bytes.QUERYOPTION_NOTIMEOUT);
+
+					 System.out.print("Cursor Count of u-p---"+cursor.size()+"  "+device_whereQuery);
+
+					if (cursor.size() != 0) {
+						msg.setError("true");
+						msg.setMessage("Device was register successfully");
+						
+					}else
+					{
+						msg.setError("false");
+						msg.setMessage("Device was not register successfully may be device is not connected to server.");
+						
+					
+					}
+				}
+					
+				}else{
+					msg.setError("false");
+					msg.setMessage("Device was not register successfully may be device entry not present in Sql Db.");
+					
+					
+				}
+				
+			}
+			catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+			}
+			return msg;
+		}
+
+		public MessageObject SaveDeviceInspectionReportAPI(Connection con,int studentId, String issueTitle, String issueDescription,
+				String finalTestingReport, String inspectdBy, String contactPerson, String inspectionDate,int userLoginId, int inspectionId, Boolean isReusable) {
+				MessageObject msgo = new MessageObject();
+				String Photo = "";	
+				
+				try {
+					java.sql.CallableStatement ps = con.prepareCall("{call SaveDeviceInspectionReport(?,?,?,?,?,?,?,?,?,?)}");
+					ps.setInt(1, studentId);
+					ps.setString(2, issueTitle);
+					ps.setString(3, issueDescription);
+					ps.setString(4, finalTestingReport);
+					ps.setString(5, inspectdBy);
+					ps.setString(6, contactPerson);
+					ps.setString(7, inspectionDate);
+					ps.setInt(8, userLoginId);
+					ps.setInt(9, inspectionId);
+					ps.setBoolean(10, isReusable);
+					
+
+					int result = ps.executeUpdate();
+					if (result == 0) {
+						msgo.setError("true");
+						msgo.setMessage("Device Inspection Report was  not Updated");
+					} else {
+						// //System.err.println("Error=="+result);
+						msgo.setError("false");
+						msgo.setMessage("Device Inspection Report was Updated Successfully");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return msgo;
+			}
+
+		public ArrayList<DeviceInspectionDTO> GetDeviceInspectionReportAPI(Connection con, int userLoginId) {
+			ArrayList<DeviceInspectionDTO> p = new ArrayList<DeviceInspectionDTO>();
+			String Photo = "";
+			try {
+				java.sql.CallableStatement ps = con.prepareCall("{call GetDeviceInspectionReport(?)}");
+				ps.setInt(1, userLoginId);
+				System.out.println("---userLoginId---"+userLoginId);
+
+				ResultSet rs = ps.executeQuery();
+				if (rs != null) {
+					while (rs.next()) {
+
+						DeviceInspectionDTO Devdto= new DeviceInspectionDTO();
+						Devdto.setInspectionId(rs.getInt("InspectId"));
+						//Devdto.setUserLoginId(rs.getInt("Id"));
+						Devdto.setStudentId(rs.getInt("StudentId"));
+						Devdto.setName(rs.getString("Name"));
+						Devdto.setIssueTitle(rs.getString("IssueTitle").trim());
+						Devdto.setIssueDescription(rs.getString("IssueDescription").trim());
+						Devdto.setFinalTestingReport(rs.getString("FinalTestingReport").trim());
+						Devdto.setInspectdBy(rs.getString("InspectBy"));
+						Devdto.setContactPerson(rs.getString("ContactPerson").trim());
+						Devdto.setInspectionDate(rs.getString("InspectionDate"));
+						Devdto.setActiveStatus(rs.getString("ActiveStaus").trim());
+						Devdto.setIsReusable(rs.getBoolean("IsReusable"));
+						p.add(Devdto);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return p;
+		}
 }
 
 

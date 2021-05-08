@@ -2,11 +2,17 @@ package dto;
 
 public class RailwayKeymanDTO {
 	String Devicename, SectionName,DeviceId,TripName,TripStartTime,TripEndTime,CreatedAt,UpdatedAt,NameWhoInsert,MobWhoInsert,EmailWhoInsert,ApprovedDate;
-	int id,CreatedBy,UpdatedBy,parentId,studentId,beatId,activeStatus,UserLoginId,startTime,EndTime;
+	int ExistingBeatId,id,BeatId,CreatedBy,UpdatedBy,parentId,studentId,beatId,activeStatus,UserLoginId,startTime,EndTime;
 	Double KmStart,KmEnd,Start_Lat,Start_Lon,End_Lat,End_Lon;
 	Boolean isApprove,isBeatPoleAvilableRDPS;
 	
 	
+	public int getExistingBeatId() {
+		return ExistingBeatId;
+	}
+	public void setExistingBeatId(int existingBeatId) {
+		ExistingBeatId = existingBeatId;
+	}
 	public String getDevicename() {
 		return Devicename;
 	}

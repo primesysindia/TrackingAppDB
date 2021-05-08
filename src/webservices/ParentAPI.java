@@ -21,6 +21,7 @@ import dto.MessageObject;
 import dto.PersonDetails;
 import dto.TrackUserSighupDTO;
 import dto.UserModuleDTO;
+import dto.UserUtilityDTO;
 
 @Path("ParentAPI")
 public class ParentAPI {	
@@ -505,5 +506,25 @@ public class ParentAPI {
 
 		return feeds;
 	}
-	
+
+	@POST
+	@Path("GetUserUtilityAPI")
+	@Produces("application/json")
+	public String GetUserUtilityAPI(@FormParam("UserId") int userid,@FormParam("RoleId") int roleid)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<UserUtilityDTO> msgData = new ArrayList<UserUtilityDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetUserUtilityAPI(userid,roleid);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		return feeds;
+	}
 }

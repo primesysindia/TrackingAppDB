@@ -13670,7 +13670,7 @@ public class ReportDAO {
 					row.getCell(0).setCellStyle(HeadingStyle);
 
 					sheet.addMergedRegion(new CellRangeAddress(sheet
-							.getLastRowNum(), sheet.getLastRowNum(), 0, 3));
+							.getLastRowNum(), sheet.getLastRowNum(), 0, 4));
 
 					row = sheet
 							.createRow(sheet.getLastRowNum() + 1);
@@ -13687,6 +13687,9 @@ public class ReportDAO {
 					cell.setCellStyle(tripColumnStyle);
 					cell = row.createCell(3);
 					cell.setCellValue("Location");
+					cell.setCellStyle(tripColumnStyle);
+					cell = row.createCell(4);
+					cell.setCellValue("Distance");
 					cell.setCellStyle(tripColumnStyle);
 					
 					try {
@@ -13868,6 +13871,9 @@ public class ReportDAO {
 								      XSSFHyperlink link = (XSSFHyperlink)createHelper.createHyperlink(Hyperlink.LINK_URL);
 								      link.setAddress("https://www.google.com/maps/place/"+dbObject.getDeviceLocationLat()+","+dbObject.getDeviceLocationLan());
 								      cell.setHyperlink((XSSFHyperlink) link);
+								      cell = row.createCell(4);
+									  cell.setCellValue(dbObject.getDistDiffbetRDPSAndLocation()+" m");
+									  
 								}else if(status.equalsIgnoreCase("Na")&&l==listObjects.size()-1){
 									
 
@@ -13889,7 +13895,7 @@ public class ReportDAO {
 										cell.setCellValue("Remark : Device is moved on Other than expected Point.");
 										cell.setCellStyle(remarkColumnStyle);
 										sheet.addMergedRegion(new CellRangeAddress(sheet
-												.getLastRowNum(), sheet.getLastRowNum(), 0, 3));
+												.getLastRowNum(), sheet.getLastRowNum(), 0, 4));
 										}
 									
 									
@@ -13915,7 +13921,7 @@ public class ReportDAO {
 								cell.setCellValue("Remark : Device is Off.");
 								cell.setCellStyle(remarkColumnStyle);
 								sheet.addMergedRegion(new CellRangeAddress(sheet
-										.getLastRowNum(), sheet.getLastRowNum(), 0, 3));
+										.getLastRowNum(), sheet.getLastRowNum(), 0, 4));
 								
 								}
 							}

@@ -23,6 +23,7 @@ import dto.MainSliderImageDTO;
 import dto.MessageObject;
 import dto.TrackUserSighupDTO;
 import dto.UserModuleDTO;
+import dto.UserUtilityDTO;
 import dto.VehicalTrackingSMSCmdDTO;
 
 public class ParentDao {
@@ -841,6 +842,42 @@ public class ParentDao {
 		}
 		System.out.println("S GetDevicelist list----"+msg.toString());
 		return msg;
+	}
+
+
+	
+	public ArrayList<UserUtilityDTO> GetUserUtilityAPI(Connection con,int userid, int roleid) {
+	ArrayList<UserUtilityDTO> p=new ArrayList<UserUtilityDTO>();
+		
+		try{			
+
+			java.sql.CallableStatement stmt= con.prepareCall("{call GetUserUtilityList(?,?)}");
+			stmt.setInt(1, userid);
+			stmt.setInt(2, roleid);
+
+			ResultSet rs=stmt.executeQuery();
+			if (rs!=null) {
+				while (rs.next()) {
+					UserUtilityDTO userDto=new UserUtilityDTO();
+					userDto.setUserId(rs.getInt("userid"));
+					userDto.setUtility(rs.getString("Utility"));
+					userDto.setUtilityTitle(rs.getString("UtilityTitle"));			
+					userDto.setUtilityDesc(rs.getString("UtilityDesc"));
+					userDto.setUtilityActivity(" "+rs.getString("UtilityActivity"));
+					userDto.setImageUrl(rs.getString("ImageUrl"));
+					userDto.setUtilityId(rs.getString("UtilityId"));
+//					userDto.setAppUtility(rs.getString("AppUtility"));
+					userDto.setAppPriority(rs.getString("AppPriority"));
+					//userDto.toString();		
+					p.add(userDto);
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+		}
+		System.out.println("S MOdule list----"+p.toString());
+		return p;
 	}
 
 }

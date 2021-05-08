@@ -10,7 +10,37 @@ public class DeviceDTO {
 	ArrayList<RailwayPatrolManDTO> beatInfoList;
 	ArrayList<DeviceIssueDTO> issueList;
 	String PaymentStatus, ExpiryDate;
-
+	String fn,sos,period,hbt,timer;
+	public String getFn() {
+		return fn;
+	}
+	public void setFn(String fn) {
+		this.fn = fn;
+	}
+	public String getSos() {
+		return sos;
+	}
+	public void setSos(String sos) {
+		this.sos = sos;
+	}
+	public String getPeriod() {
+		return period;
+	}
+	public void setPeriod(String period) {
+		this.period = period;
+	}
+	public String getHbt() {
+		return hbt;
+	}
+	public void setHbt(String hbt) {
+		this.hbt = hbt;
+	}
+	public String getTimer() {
+		return timer;
+	}
+	public void setTimer(String timer) {
+		this.timer = timer;
+	}
 	public String getPaymentStatus() {
 		return PaymentStatus;
 	}

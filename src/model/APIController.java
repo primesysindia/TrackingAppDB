@@ -56,6 +56,15 @@ import org.json.JSONArray;
 
 
 
+
+
+
+
+
+
+
+
+
 import SQLdao.SQL_QuizDAO;
 
 import com.google.gson.Gson;
@@ -92,6 +101,7 @@ import dto.DeviceDTO;
 import dto.DeviceDataDTO;
 import dto.DeviceExchangeDTO;
 import dto.DeviceInfoGatheringDTO;
+import dto.DeviceInspectionDTO;
 import dto.DeviceIssueDTO;
 import dto.DevicePaymentDTO;
 import dto.DevicePaymentInfoDetailsDTO;
@@ -101,6 +111,7 @@ import dto.DeviceStatusInfoDto;
 import dto.DevicelistDetails;
 import dto.DriverEmpTaskSheduledDTO;
 import dto.DriverEmployeeTaskDetailsDTO;
+import dto.DeviceRegisterDTO;
 import dto.EmpAttendanceDTO;
 import dto.ExceptionDeviceDTO;
 import dto.ExceptionReportFileDTO;
@@ -112,6 +123,7 @@ import dto.HistoryInfoDTO;
 import dto.IssueFileInfoDTO;
 import dto.LoginUserDto;
 import dto.MailFormatDTO;
+import dto.PatrolManBeatDTO;
 import dto.RailDeviceInfoDto;
 import dto.RailWayAddressDTO;
 import dto.FrdlistDTO;
@@ -127,6 +139,7 @@ import dto.PersonDetails;
 import dto.RailwayDeptHierarchyDTO;
 import dto.RailwayKeymanDTO;
 import dto.RailwayPatrolManDTO;
+import dto.ReportDataAdminDTO;
 import dto.ReportSummeryDTO;
 import dto.SmsNotificationDTO;
 import dto.SosDto;
@@ -140,6 +153,7 @@ import dto.TrackUserSighupDTO;
 import dto.TripInfoDto;
 import dto.UserDTO;
 import dto.UserModuleDTO;
+import dto.UserUtilityDTO;
 import dto.VTSDataDTO;
 import dto.VehicalTrackingSMSCmdDTO;
 import dto.WrongLocationDataDTO;
@@ -5291,11 +5305,11 @@ e.printStackTrace();		}
 		}
 		
 		public MessageObject UpdateRailwayKeymanBeatPathCopyApprove(int beatId,
-				int userLoginId) {
+				int userLoginId, int existingBeatId) {
 			MessageObject  dtp=new MessageObject();
 			try { 
 				AdminServiceDao dao=new AdminServiceDao();
-				dtp=dao.UpdateRailwayKeymanBeatPathCopyApprove(con,beatId,userLoginId);
+				dtp=dao.UpdateRailwayKeymanBeatPathCopyApprove(con,beatId,userLoginId,existingBeatId);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}finally{
@@ -5380,12 +5394,12 @@ e.printStackTrace();		}
 		}
 		public MessageObject AddNewDevice(int StudentID, int ParentId, String FirstName, String LastName, String Gender, 
 				String DeviceID, String Type, int DeviceType, String DeviceSimNumber, String ActivationDate, int PlanTypeID, 
-				int PaymentMode, String CreditName, String PaymentDate, String TransactionID, Double PayAmount, int registerOutParameter) {
+				int PaymentMode, String CreditName, String PaymentDate, String TransactionID, Double PayAmount, int registerOutParameter,String DeviceSimIMEINumber) {
 			MessageObject  dtp=new MessageObject();
 			try { 
 				AdminServiceDao dao=new AdminServiceDao();
 				dtp=dao.AddNewDevice(mongoconnection,con,StudentID,ParentId,FirstName,LastName,Gender,DeviceID,Type,DeviceType,DeviceSimNumber,
-						ActivationDate,PlanTypeID,PaymentMode,CreditName,PaymentDate,TransactionID,PayAmount,registerOutParameter);
+						ActivationDate,PlanTypeID,PaymentMode,CreditName,PaymentDate,TransactionID,PayAmount,registerOutParameter,DeviceSimIMEINumber);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}finally{
@@ -5405,12 +5419,12 @@ e.printStackTrace();		}
 		
 		public MessageObject AddBulkDevices(String ActivationDate, int DeviceType,Double PayAmount,
 				String PaymentDate,int PaymentMode, int PlanTypeID,String TransactionID, String Type,
-				String BulkData,String CreditName,int ParentId) {
+				String BulkData,String CreditName,int ParentId,String DeviceSimIMEINumber) {
 			MessageObject  dtp=new MessageObject();
 			try { 
 				AdminServiceDao dao=new AdminServiceDao();
 				dtp=dao.AddBulkDevices(mongoconnection,con,ActivationDate,DeviceType,PayAmount,PaymentDate,
-						PaymentMode,PlanTypeID,TransactionID,Type,BulkData,CreditName,ParentId);
+						PaymentMode,PlanTypeID,TransactionID,Type,BulkData,CreditName,ParentId,DeviceSimIMEINumber);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}finally{
@@ -5427,7 +5441,266 @@ e.printStackTrace();		}
 			}
 			return dtp;
 		}
+		public MessageObject AddPatrolmanBeatBulk(int parentId,int userLoginId, String name, String contactNo,
+				int seasonId,String emailId, String patrolmenFormArray) {
+			MessageObject  dtp=new MessageObject();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.AddPatrolmanBeatBulk(mongoconnection,con,parentId,userLoginId,name,contactNo,seasonId,emailId,patrolmenFormArray);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
 
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		public ArrayList<PatrolManBeatDTO> GetPatrolMenBeatAPI(int StudentId,int SeasonId) {
+			ArrayList<PatrolManBeatDTO>  dtp=new ArrayList<PatrolManBeatDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetPatrolMenBeatAPI(con,StudentId,SeasonId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
 		
+		public ArrayList<PatrolManBeatDTO> GetPatrolmanExistingBeatByParent(int parentId, int seasonId) { 
+			ArrayList<PatrolManBeatDTO>  dtp=new ArrayList<PatrolManBeatDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetPatrolMenExistingBeatByParent(con,parentId,seasonId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		
+		public MessageObject UpdateRailwayPatrolmanBeatPathCopyApprove(int beatId, int userloginId) {
+			MessageObject  dtp=new MessageObject();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.UpdateRailwayPatrolmanBeatPathCopyApprove(con,beatId,userloginId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		public ArrayList<RailwayKeymanDTO> GetKeymanExistingBeatToApproveByParent(
+				int parentId) {
+			ArrayList<RailwayKeymanDTO>  dtp=new ArrayList<RailwayKeymanDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetKeymanExistingBeatToApproveByParent(con,parentId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		public ArrayList<PatrolManBeatDTO> GetPatrolMenExistingBeatByParent(int parentId, int seasonId) { 
+			ArrayList<PatrolManBeatDTO>  dtp=new ArrayList<PatrolManBeatDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetPatrolMenExistingBeatByParent(con,parentId,seasonId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}	
+		public ArrayList<PatrolManBeatDTO> GetPatrolmanExistingBeatToApproveByParent(int parentId, int seasonId) { 
+			ArrayList<PatrolManBeatDTO>  dtp=new ArrayList<PatrolManBeatDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetPatrolmanExistingBeatToApproveByParent(con,parentId,seasonId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		public MessageObject GetPendingDeviceCommandHistoryByDevice(String deviceId) {
+			MessageObject  dtp=new MessageObject();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetPendingDeviceCommandHistoryByDevice(mongoconnection,deviceId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				
+
+			}
+			return dtp;
+	}
+		public ArrayList<ReportDataAdminDTO> GetReportAdminAPI(int parentId, int day) {
+			ArrayList<ReportDataAdminDTO>  dtp=new ArrayList<ReportDataAdminDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetReportAdminAPI(con,parentId,day);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		
+		public MessageObject DeviceRegisterAPI(String imeiNo) {
+			MessageObject  dtp=new MessageObject();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.DeviceRegisterAPI(mongoconnection,con,imeiNo);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		
+		public MessageObject SaveDeviceInspectionReportAPI(int studentId,String issueTitle, String issueDescription,String finalTestingReport,
+				String inspectdBy,String contactPerson,String inspectionDate,int userLoginId, int inspectionId, Boolean isReusable) {
+			MessageObject  dtp=new MessageObject();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.SaveDeviceInspectionReportAPI(con,studentId,issueTitle,issueDescription,finalTestingReport,
+						inspectdBy,contactPerson,inspectionDate,userLoginId,inspectionId,isReusable);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		
+		public ArrayList<DeviceInspectionDTO> GetDeviceInspectionReportAPI(int userLoginId) {
+			ArrayList<DeviceInspectionDTO>  dtp=new ArrayList<DeviceInspectionDTO>();
+			try { 
+				AdminServiceDao dao=new AdminServiceDao();
+				dtp=dao.GetDeviceInspectionReportAPI(con,userLoginId);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					if (mongo_instance!=null) 
+						mongo_instance.close();
+					if (con!=null) 
+						con.close();
+
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return dtp;
+		}
+		public ArrayList<UserUtilityDTO> GetUserUtilityAPI(int userid,int roleid) {
+			ArrayList<UserUtilityDTO> dtp=new ArrayList<UserUtilityDTO>();
+			try { 
+				ParentDao dao=new ParentDao();
+				dtp=dao.GetUserUtilityAPI(con,userid,roleid);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return dtp;
+		}
 		
 }

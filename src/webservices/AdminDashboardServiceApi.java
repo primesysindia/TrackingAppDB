@@ -1,5 +1,7 @@
 package webservices;
 
+import jakarta.ws.rs.PathParam;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.codec.binary.Base64;
@@ -38,16 +41,20 @@ import dto.DeviceDTO;
 import dto.DeviceDataDTO;
 import dto.DeviceExchangeDTO;
 import dto.DeviceInfoGatheringDTO;
+import dto.DeviceInspectionDTO;
 import dto.DeviceIssueDTO;
 import dto.DevicePaymentDTO;
 import dto.DevicePaymentInfoDetailsDTO;
+import dto.DeviceRegisterDTO;
 import dto.FeatureAddressDetailsDTO;
 import dto.IssueFileInfoDTO;
 import dto.MailFormatDTO;
 import dto.MessageObject;
+import dto.PatrolManBeatDTO;
 import dto.RailwayDeptHierarchyDTO;
 import dto.RailwayKeymanDTO;
 import dto.RailwayPatrolManDTO;
+import dto.ReportDataAdminDTO;
 import dto.ReportSummeryDTO;
 import dto.UserDTO;
 @Path("AdminDashboardServiceApi")
@@ -97,7 +104,7 @@ public class AdminDashboardServiceApi {
 			e.printStackTrace();
 			//System.out.println(e.getMessage());
 		}
-		//System.out.println("GetKeymanExistingBeat-----"+feeds);
+		System.out.println("GetKeymanExistingBeat-----"+feeds);
 		return feeds;
 	}
 	
@@ -1041,7 +1048,7 @@ public class AdminDashboardServiceApi {
 		} catch (Exception e)
 		{
 			e.printStackTrace();
-			////System.out.println(e.getMessage());
+//			System.out.println(e.getMessage());
 		}
 		//System.out.println("----"+feeds);
 		return feeds;
@@ -1197,6 +1204,8 @@ public class AdminDashboardServiceApi {
 				RailwayKeymanDTO dto=new RailwayKeymanDTO();
 				dto.setStudentId(trip.getInt("studentId"));
 				dto.setSectionName(trip.getString("sectionName"));
+				
+				dto.setBeatId(trip.getInt("beatId"));
 				dto.setUserLoginId(jodata.getInt("userLoginId"));
 				dto.setKmStart(trip.getDouble("kmStart"));
 				dto.setKmEnd(trip.getDouble("kmEnd"));
@@ -1254,13 +1263,14 @@ public class AdminDashboardServiceApi {
 	@POST
 	@Path("UpdateRailwayKeymanBeatPathCopyApprove")
 	@Produces("application/json")
-	public String UpdateRailwayKeymanBeatPathCopyApprove(@FormParam("beatId") int beatId,@FormParam("userLoginId") int userLoginId)	{
+	public String UpdateRailwayKeymanBeatPathCopyApprove(@FormParam("beatId") int beatId,
+			@FormParam("userLoginId") int userLoginId,@FormParam("ExistingBeatId") int ExistingBeatId)	{
 		String feeds  = null;
 		try 
 		{
 			MessageObject devExcDTO= new MessageObject();
 			APIController handler= new APIController();
-			devExcDTO = handler.UpdateRailwayKeymanBeatPathCopyApprove(beatId,userLoginId);
+			devExcDTO = handler.UpdateRailwayKeymanBeatPathCopyApprove(beatId,userLoginId,ExistingBeatId);
 			Gson gson = new Gson();
 			feeds = gson.toJson(devExcDTO);
 		} catch (Exception e)
@@ -1275,7 +1285,7 @@ public class AdminDashboardServiceApi {
 	@POST
 	@Path("RemoveDeviceAPI")
 	@Produces("application/json")
-	public String RemoveDeviceAPI(@FormParam("deviceId1") String deviceId1,@FormParam("userLoginId") int userLoginId)
+	public String RemoveDeviceAPI(@FormParam("ImeiNo") String deviceId1,@FormParam("userLoginId") int userLoginId)
 	{
 		String feeds  = null;
 		try 
@@ -1347,14 +1357,14 @@ public class AdminDashboardServiceApi {
 			@FormParam("Type") String Type,@FormParam("DeviceType") int DeviceType,@FormParam("DeviceSimNumber") String DeviceSimNumber,
 			@FormParam("ActivationDate") String ActivationDate,@FormParam("PlanTypeID") int PlanTypeID,@FormParam("PaymentMode") int PaymentMode,
 			@FormParam("CreditName") String CreditName,@FormParam("PaymentDate") String PaymentDate,@FormParam("TransactionID") String TransactionID,
-			@FormParam("PayAmount") Double PayAmount,@FormParam("registerOutParameter") int registerOutParameter)	{
+			@FormParam("PayAmount") Double PayAmount,@FormParam("registerOutParameter") int registerOutParameter,@FormParam("DeviceSimIMEINumber") String DeviceSimIMEINumber)	{
 		String feeds  = null;
 		try 
 		{
 			MessageObject msgData=new MessageObject();
 			APIController handler= new APIController();
 			msgData = handler.AddNewDevice(StudentID,ParentId,FirstName,LastName,Gender,DeviceID,Type,DeviceType,DeviceSimNumber,
-					ActivationDate,PlanTypeID,PaymentMode,CreditName,PaymentDate,TransactionID,PayAmount,registerOutParameter);
+					ActivationDate,PlanTypeID,PaymentMode,CreditName,PaymentDate,TransactionID,PayAmount,registerOutParameter,DeviceSimIMEINumber);
 			Gson gson = new Gson();
 			feeds = gson.toJson(msgData);
 		} catch (Exception e)
@@ -1372,14 +1382,14 @@ public class AdminDashboardServiceApi {
 	public String AddBulkDevices(@FormParam("ActivationDate") String ActivationDate,@FormParam("DeviceType") int DeviceType,
 			@FormParam("PayAmount") Double PayAmount,@FormParam("PaymentDate") String PaymentDate,@FormParam("PaymentMode") int PaymentMode,
 			@FormParam("PlanTypeID") int PlanTypeID,@FormParam("TransactionID") String TransactionID,@FormParam("Type") String Type,
-			@FormParam("BulkData") String BulkData,@FormParam("CreditName") String CreditName,@FormParam("ParentId") int ParentId)	{
+			@FormParam("BulkData") String BulkData,@FormParam("CreditName") String CreditName,@FormParam("ParentId") int ParentId,@FormParam("DeviceSimIMEINumber") String DeviceSimIMEINumber)	{
 		String feeds  = null;
 		try 
 		{
 			MessageObject msgData=new MessageObject();
 			APIController handler= new APIController();
 			msgData = handler.AddBulkDevices(ActivationDate,DeviceType,PayAmount,PaymentDate,
-					PaymentMode,PlanTypeID,TransactionID,Type,BulkData,CreditName,ParentId);
+					PaymentMode,PlanTypeID,TransactionID,Type,BulkData,CreditName,ParentId,DeviceSimIMEINumber);
 			Gson gson = new Gson();
 			feeds = gson.toJson(msgData);
 		} catch (Exception e)
@@ -1388,6 +1398,253 @@ public class AdminDashboardServiceApi {
 			System.out.println(e.getMessage());
 		}
 		System.out.println("AddBulkDevices-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("AddPatrolmanBeatBulk")
+	@Produces("application/json")
+	public String AddPatrolmanBeatBulk(@FormParam("parentId") int parentId,@FormParam("userLoginId") int userLoginId,@FormParam("name") String name,
+			@FormParam("contactNo") String contactNo,@FormParam("seasonId") int seasonId,@FormParam("emailId") String emailId,
+			@FormParam("patrolmenFormArray") String patrolmenFormArray)	{
+		String feeds  = null;
+		try 
+		{
+			MessageObject msgData=new MessageObject();
+			APIController handler= new APIController();
+			msgData = handler.AddPatrolmanBeatBulk(parentId,userLoginId,name,contactNo,seasonId,emailId,patrolmenFormArray);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("AddPatrolmanBeatBulk-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetPatrolMenBeatAPI")
+	@Produces("application/json")
+	public String GetPatrolMenBeatAPI(@FormParam("StudentId") int StudentId,@FormParam("SeasonId") int SeasonId)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<PatrolManBeatDTO> PatDTO=new ArrayList<PatrolManBeatDTO>();
+			APIController handler= new APIController();
+			PatDTO = handler.GetPatrolMenBeatAPI(StudentId,SeasonId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(PatDTO);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("GetPatrolMenBeatAPI-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetPatrolMenExistingBeatByParent")
+	@Produces("application/json")
+	public String GetPatrolMenExistingBeatByParent(@FormParam("parentId") int parentId,@FormParam("seasonId") int seasonId)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<PatrolManBeatDTO> msgData = new ArrayList<PatrolManBeatDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetPatrolMenExistingBeatByParent(parentId,seasonId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("GetPatrolMenExistingBeatByParent-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("UpdateRailwayPatrolmanBeatPathCopyApprove")
+	@Produces("application/json")
+	public String UpdateRailwayPatrolmanBeatPathCopyApprove(@FormParam("beatId") int beatId,@FormParam("userloginId") int userloginId)	{
+
+		String feeds  = null;
+		try 
+		{
+			MessageObject devExcDTO= new MessageObject();
+			APIController handler= new APIController();
+			devExcDTO = handler.UpdateRailwayPatrolmanBeatPathCopyApprove(beatId,userloginId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(devExcDTO);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("UpdateRailwayPatrolMenBeatPathCopyApprove-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetKeymanExistingBeatToApproveByParent")
+	@Produces("application/json")
+	public String GetKeymanExistingBeatToApproveByParent(@FormParam("parentId") int parentId)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<RailwayKeymanDTO> msgData = new ArrayList<RailwayKeymanDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetKeymanExistingBeatToApproveByParent(parentId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			////System.out.println(e.getMessage());
+		}
+		//System.out.println("GetKeymanExistingBeatByParent-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetPatrolmanExistingBeatToApproveByParent")
+	@Produces("application/json")
+	public String GetPatrolmanExistingBeatToApproveByParent(@FormParam("parentId") int parentId,@FormParam("seasonId") int seasonId)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<PatrolManBeatDTO> msgData = new ArrayList<PatrolManBeatDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetPatrolmanExistingBeatToApproveByParent(parentId,seasonId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("GetPatrolmanExistingBeatToApproveByParent-----"+feeds);
+		return feeds;
+	}
+	
+	@GET
+	@Path("GetPendingDeviceCommandHistoryByDevice")
+	@Produces("application/json")
+	public String GetPendingDeviceCommandHistoryByDevice(@QueryParam("DeviceId") String deviceId)
+	{
+		String feeds  = null;
+		try 
+		{
+			System.out.println("GetPendingDeviceCommandHistoryByDevice-----"+deviceId);
+			MessageObject msgData = new MessageObject();
+			APIController handler= new APIController();
+			msgData = handler.GetPendingDeviceCommandHistoryByDevice(deviceId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			////System.out.println(e.getMessage());
+		}
+		System.out.println("-GetPendingDeviceCommandHistoryByDevice---"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetReportAdminAPI")
+	@Produces("application/json")
+	public String GetReportAdminAPI(@FormParam("parentId") int parentId,@FormParam("day") int day)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<ReportDataAdminDTO> msgData = new ArrayList<ReportDataAdminDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetReportAdminAPI(parentId,day);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("GetReportAdminAPI-----"+feeds);
+		return feeds;
+	}	
+	@POST
+	@Path("DeviceRegisterAPI")
+	@Produces("application/json")
+	public String DeviceRegisterAPI(@FormParam("imeiNo") String imeiNo)	{
+		String feeds  = null;
+		try 
+		{
+			MessageObject msgData = new MessageObject();
+			APIController handler= new APIController();
+			msgData = handler.DeviceRegisterAPI(imeiNo);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("DeviceRegisterAPI-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("SaveDeviceInspectionReportAPI")
+	@Produces("application/json")
+	public String SaveDeviceInspectionReportAPI(@FormParam("studentId") int studentId,@FormParam("issueTitle") String issueTitle,
+		@FormParam("issueDescription") String issueDescription,@FormParam("finalTestingReport") String finalTestingReport,
+		@FormParam("inspectdBy") String inspectdBy,@FormParam("contactPerson") String contactPerson,@FormParam("inspectionDate ") String inspectionDate,
+		@FormParam("userLoginId") int userLoginId,@FormParam("inspectionId") int inspectionId,@FormParam("isReusable") Boolean isReusable)
+	{
+		String feeds  = null;
+		try 
+		{
+			System.out.println("SaveDeviceInspectionReportAPI-----"+studentId);
+			MessageObject msgData=new MessageObject();
+			APIController handler= new APIController();
+			msgData = handler.SaveDeviceInspectionReportAPI(studentId,issueTitle,issueDescription,finalTestingReport,
+					inspectdBy,contactPerson,inspectionDate,userLoginId,inspectionId,isReusable);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("SaveDeviceInspectionReportAPI-----"+feeds);
+		return feeds;
+	}
+	
+	@POST
+	@Path("GetDeviceInspectionReportAPI")
+	@Produces("application/json")
+	public String GetDeviceInspectionReportAPI(@FormParam("userLoginId") int userLoginId)
+	{
+		String feeds  = null;
+		try 
+		{
+			ArrayList<DeviceInspectionDTO> msgData = new ArrayList<DeviceInspectionDTO>();
+			APIController handler= new APIController();
+			msgData = handler.GetDeviceInspectionReportAPI(userLoginId);
+			Gson gson = new Gson();
+			feeds = gson.toJson(msgData);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}
+		System.out.println("GetDeviceInspectionReportAPI-----"+feeds);
 		return feeds;
 	}
 }

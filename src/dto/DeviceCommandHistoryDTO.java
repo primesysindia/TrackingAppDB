@@ -3,8 +3,16 @@ package dto;
 public class DeviceCommandHistoryDTO {
 	String commandId,name,deviceId,command,commandDeliveredMsg,
 	deviceCommandResponse,timestamp,deviceResponseTime,login_name;
-	int StudentId;
+	int StudentId,ParentId;
 	
+	public int getParentId() {
+		return ParentId;
+	}
+
+	public void setParentId(int parentId) {
+		ParentId = parentId;
+	}
+
 	public int getStudentId() {
 		return StudentId;
 	}

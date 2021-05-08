@@ -38,17 +38,20 @@ public class Common {
 
 	
 	
-/*	// LIve URL	
+	// LIve URL	
 
-//	public static String SQL_Connection="jdbc:sqlserver://114.143.99.170:1433;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2019;authenticationScheme=JavaKerberos;integratedSecurity=false;";
-	public static final String SQL_Connection = "jdbc:sqlserver://localhost:1466;database=TrackingAppDB;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
+/*	public static String SQL_Connection="jdbc:sqlserver://114.143.99.170:1433;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2019;authenticationScheme=JavaKerberos;integratedSecurity=false;";
+//	public static final String SQL_Connection = "jdbc:sqlserver://localhost:1466;database=TrackingAppDB;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 
-	public static final String SQL_Connection_Sun_Mssql = "jdbc:sqlserver://localhost:1466;database=TrackingAppDB;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
+	public static final String SQL_Connection_Sun_Mssql = "jdbc:sqlserver://localhost:1466;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 
 	//public static String SQL_Connection="jdbc:sqlserver://157.230.228.152:1433;database=TrackingApp;user=sa;password=Pr1m3sys;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 	public static String mongo_Connection="127.0.0.1";
+
+	public static String socketURL_Connection="127.0.0.1";
+
 	
-	//FOr Live 
+	//for Live 
 	public static String key = "a6doMg";// "gtKFFx";//put your key
 	public static String salt = "XpRAicke";// "eCwWELxi";//put your salt
 	public static String Log_path="/home/prime/MyKiddyLog/";
@@ -86,29 +89,28 @@ public class Common {
     public static String CHANNLE_ID = "WAP";
     public static String WEBSITE = "PRTECHWEB";
     public static String CALLBACK_URL = "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=";
-
-	
 */
 	
 	//Local URL
 	//Moon Server MSSQL COnnection	
-//	public static String SQL_Connection="jdbc:sqlserver://114.143.99.170:1433;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2019;authenticationScheme=JavaKerberos;integratedSecurity=false;";
+	public static String SQL_Connection="jdbc:sqlserver://114.143.99.170:1433;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2019;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 //	public static final String SQL_Connection = "jdbc:sqlserver://114.143.99.170:1466;database=TrackingAppDB;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 
-//	public static String mongo_Connection="114.143.99.170";
+	public static String mongo_Connection="114.143.99.170";
 	
 	//SUN server MSSQL COnnection
 	public static final String SQL_Connection_Sun_Mssql = "jdbc:sqlserver://114.143.99.170:1466;database=TrackingApp;user=sa;password=Pr1m3sys@MKT$2020;authenticationScheme=JavaKerberos;integratedSecurity=false;";
-
-	
-	public static String SQL_Connection="jdbc:sqlserver://123.252.246.214:1433;database=TrackingApp;user=sa;password=Prime@MKT;authenticationScheme=JavaKerberos;integratedSecurity=false;";
-	public static String mongo_Connection="127.0.0.1";
+//
+//	
+//	public static String SQL_Connection="jdbc:sqlserver://123.252.246.214:1433;database=TrackingApp;user=sa;password=Prime@MKT;authenticationScheme=JavaKerberos;integratedSecurity=false;";
+//	public static String mongo_Connection="127.0.0.1";
 	//public static String mongo_Connection="192.168.1.101";
 //	public static String mongo_Connection="157.230.228.152"; // Mongo Db on Digital Ocean Cloud
 
 	//public static String SQL_Connection="jdbc:sqlserver://192.168.1.110:1433;database=TrackingApp;user=sa;password=Prime@MKT;authenticationScheme=JavaKerberos;integratedSecurity=false;";
 
-	
+	public static String socketURL_Connection="127.0.0.1";
+
 	public static String key = "40747T";// "gtKFFx";//put your key
 	public static  String salt = "cJHb2BC9";// "eCwWELxi";//put your salt
 	public static String Log_path="/home/pt002/Log/";
@@ -148,8 +150,8 @@ public class Common {
    
   //Local URL End---------------------------------
    
-  
-    
+
+ 
 	
  /*  //  paytm live
   *   public static String MID = "PRTECH60810536349319";
